@@ -28,7 +28,7 @@ Pytorch implementation of ACL 2016 paper, [Attention-Based Bidirectional Long Sh
 </p>
 
 
-## Quick Start
+<!-- ## Quick Start
 ### Dataloading
 ```
 python data/re_semeval/reader.py
@@ -87,7 +87,7 @@ python train.py -load_model 'tmp/model'
 	| Message-Topic      | 634 (7.92%)         | 261 (9.61%)         | 895 (8.35%)          |
 	| Other              | 1,410 (17.63%)      | 454 (16.71%)        | 1864 (17.39%)        |
 	| **Total**          | **8,000 (100.00%)** | **2,717 (100.00%)** | **10,717 (100.00%)** |
-
+ -->
 
 
 ## Reference
