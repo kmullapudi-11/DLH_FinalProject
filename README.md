@@ -1,3 +1,21 @@
+# DLH Final Project - ssm, ageubell
+Steps to run our code:
+1. Create a python virtual environment in this directory
+2. Install dependencies using:
+```
+pip3 install -r requirements.txt
+```
+3. Pre-process the data by running:
+```
+python3 data_formatting.py
+```
+4. Run the model:
+```
+python3 train.py
+```
+
+----
+
 # (Pytorch) Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification
 Pytorch implementation of ACL 2016 paper, [Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification](http://www.aclweb.org/anthology/P16-2034) (Zhou et al., 2016)
 
@@ -75,7 +93,3 @@ python train.py -load_model 'tmp/model'
 ## Reference
 * [**Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification**](http://www.aclweb.org/anthology/P16-2034) (ACL 2016), P Zhou et al.
 * SeoSangwoo's [Tensorflow implementation](https://github.com/SeoSangwoo/Attention-Based-BiLSTM-relation-extraction)
-
-
-# DLH_FinalProject
-# DLH_FinalProject
