@@ -1,4 +1,4 @@
-# DLH Final Project - ssm, ageubell
+# DLH Final Project Team 82 - ssm5@illinois.edu, ageubell@illinois.edu
 Steps to run our code:
 1. Create a python virtual environment in this directory
 2. Install dependencies using:
