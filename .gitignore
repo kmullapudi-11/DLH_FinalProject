@@ -183,7 +183,7 @@ fabric.properties
 
 
 # ignore large data files
-tmp*/
+tmp/
 outputs/
 09*/
 
