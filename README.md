@@ -16,7 +16,9 @@ python3 train.py
 
 ----
 
-# (Pytorch) Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification
+# [Original GitHub README] 
+
+## (Pytorch) Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification
 Pytorch implementation of ACL 2016 paper, [Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification](http://www.aclweb.org/anthology/P16-2034) (Zhou et al., 2016)
 
 - **Dataset:** Relation Extraction Challenge([**SemEval-2010 Task #8**: *Multi-Way Classification of Semantic Relations Between Pairs of Nominals*](https://docs.google.com/document/d/1QO_CnmvNRnYwNWu1-QCAeR5ToQYkXUqFeAJbdEhsq7w/preview))
