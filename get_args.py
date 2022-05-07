@@ -38,7 +38,7 @@ def get_args():
     group = parser.add_argument_group('Training Specs')
     group.add_argument('-seed', default=0, type=int, help='random seed')
     group.add_argument('-batch_size', default=10, type=int, help='batch size')
-    group.add_argument('-epochs', default=100, type=int,
+    group.add_argument('-epochs', default=20, type=int,
                        help='number of epochs to train the model')
     group.add_argument('-lr', default=0.001, type=float, help='learning rate')
     group.add_argument('-weight_decay', default=1e-5, type=float,

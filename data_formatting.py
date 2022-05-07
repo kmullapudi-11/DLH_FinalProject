@@ -2,6 +2,8 @@ import re
 import glob
 import os
 import fnmatch
+from sklearn.model_selection import train_test_split
+import pandas as pd
 
 def generate_ast_dictionary_for_file(ast_lines):
 	'''
@@ -82,10 +84,12 @@ def generate_output_lines_and_labels(text_lines, ast_dict):
 		raise ValueError("Output lines and labels are not of the save size.")
 	return output_lines, output_labels
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+print("Current directory: " + dir_path)
 
 # Create a list of pairs for all txt and ast files in the training data.
 # The training data is located in two separate folders based on its location.
-original_path_ast = "../concept_assertion_relation_training_data/beth/ast"
+original_path_ast = "concept_assertion_relation_training_data/beth/ast"
 all_records = os.listdir(original_path_ast)
 paths = []
 for record_ast in all_records:
@@ -95,7 +99,7 @@ for record_ast in all_records:
 
 	paths.append((path_ast, path_txt))
 
-original_path_ast = "../concept_assertion_relation_training_data/partners/ast"
+original_path_ast = "concept_assertion_relation_training_data/partners/ast"
 all_records = os.listdir(original_path_ast)
 for record_ast in all_records:
 	record_txt = record_ast.replace(".ast", ".txt")
@@ -117,12 +121,27 @@ for path_tuple in paths:
 	output_lines, output_labels = generate_output_lines_and_labels(text_lines, ast_dict)
 	final_output_labels.extend(output_labels)
 	final_output_lines.extend(output_lines)
-	
+
+X_train, X_test, y_train, y_test = train_test_split(final_output_lines, final_output_labels, test_size=0.30, random_state=42)
+
+train_df = pd.DataFrame()
+train_df['tgt'] = y_train
+train_df['input'] = X_train
+train_df['show_inp'] = X_train
+train_df.to_csv('tmp2/train.csv', index=False)
+
+test_df = pd.DataFrame()
+test_df['tgt'] = y_test
+test_df['input'] = X_test
+test_df['show_inp'] = X_test
+test_df.to_csv('tmp2/test.csv', index=False)
+test_df.to_csv('tmp2/valid.csv', index=False)
+
 """
 Write output to csv file with columns:
 label, sentence, sentence
 """
-with open('tmp2/pre_processed_lines.csv', 'w') as f:
-    for idx, item in enumerate(final_output_lines):
-    	item = item.replace("\"", "", 10)
-        f.write("%s,\"%s\",\"%s\"\n" % (final_output_labels[idx], item, item))
+# with open('tmp2/pre_processed_lines.csv', 'w') as f:
+#     for idx, item in enumerate(final_output_lines):
+#     	item = item.replace("\"", "", 10)
+#         f.write("%s,\"%s\",\"%s\"\n" % (final_output_labels[idx], item, item))

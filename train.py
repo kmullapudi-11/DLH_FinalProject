@@ -18,7 +18,7 @@ def clip_gradient(model, clip_value):
         p.grad.data.clamp_(-clip_value, clip_value)
 
 
-def train(proc_id, model=None, train_dl=None, validator=None,
+def train(model=None, train_dl=None, validator=None,
           tester=None, epochs=20, lr=0.001, log_every_n_examples=1,
           weight_decay=0):
     # opt = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()),
@@ -27,7 +27,7 @@ def train(proc_id, model=None, train_dl=None, validator=None,
         filter(lambda p: p.requires_grad, model.parameters()), lr=1.0, rho=0.9,
         eps=1e-6, weight_decay=weight_decay)
 
-    for epoch in range(epochs):
+    for epoch in tqdm(range(epochs)):
         if epoch - validator.best_epoch > 10:
             return
 
@@ -36,19 +36,10 @@ def train(proc_id, model=None, train_dl=None, validator=None,
         n_correct = 0
         cnt = 0
 
-        print(pbar)
         model.train()
 
         for batch in pbar:
             batch_size = len(batch.tgt)
-
-            # if proc_id == 0 and cnt % log_every_n_examples < batch_size:
-            #     pbar.set_description('E{:02d}, loss:{:.4f}, acc:{:.4f}, lr:{}'
-            #                          .format(epoch,
-            #                                  total_loss / cnt if cnt else 0,
-            #                                  n_correct / cnt if cnt else 0,
-            #                                  opt.param_groups[0]['lr']))
-            #     pbar.refresh()
 
             loss, acc = model.loss_n_acc(batch.input, batch.tgt)
             total_loss += loss.item() * batch_size
@@ -62,17 +53,16 @@ def train(proc_id, model=None, train_dl=None, validator=None,
 
         model.eval()
         validator.evaluate(model, epoch)
-        # tester.evaluate(model, epoch)
-        if proc_id == 0:
-            summ = {
-                'Eval': '(e{:02d},train)'.format(epoch),
-                'loss': total_loss / cnt,
-                'acc': n_correct / cnt,
-            }
-            validator.write_summary(summ=summ)
-            validator.write_summary(epoch=epoch)
+        tester.evaluate(model, epoch)
 
-            # tester.write_summary(epoch)
+        summ = {
+            'Eval': '(e{:02d},train)'.format(epoch),
+            'loss': total_loss / cnt,
+            'acc': n_correct / cnt,
+        }
+        validator.write_summary(summ=summ)
+        validator.write_summary(epoch=epoch)
+        tester.write_summary(epoch)
 
 
 def bookkeep(predictor, validator, tester, args, INPUT_field):
@@ -88,16 +78,16 @@ def bookkeep(predictor, validator, tester, args, INPUT_field):
     clean_up(args)
 
 
-def run(proc_id, args):
+def run(args):
     set_seed(args.seed)
 
-    dataset = Dataset(proc_id=proc_id, data_dir='tmp2/',
-                      train_fname='pre_processed_lines.csv',
+    dataset = Dataset(proc_id=0, data_dir='tmp2/',
+                      train_fname='train.csv',
                       preprocessed=True, lower=True,
                       vocab_max_size=100000, emb_dim=100,
                       save_vocab_fname=args.save_vocab_fname, verbose=True, )
     train_dl, valid_dl, test_dl = \
-        dataset.get_dataloader(proc_id=proc_id, batch_size=args.batch_size)
+        dataset.get_dataloader(proc_id=0, batch_size=args.batch_size)
 
     validator = Validator(dataloader=valid_dl, save_dir=args.save_dir,
                           save_log_fname=args.save_log_fname,
@@ -131,20 +121,19 @@ def run(proc_id, args):
                            n_linear=args.n_linear,
                            n_classes=len(dataset.TGT.vocab))
     if args.init_xavier: model.apply(init_weights)
-    args = model_setup(proc_id, model, args)
+    args = model_setup(0, model, args)
 
-    train(proc_id, model=model, train_dl=train_dl,
+    train(model=model, train_dl=train_dl,
           validator=validator, tester=tester, epochs=args.epochs, lr=args.lr,
           weight_decay=args.weight_decay)
 
-    if proc_id == 0:
-        predictor.use_pretrained_model(args.save_model_fname)
-        bookkeep(predictor, validator, tester, args, dataset.INPUT)
+    predictor.use_pretrained_model(args.save_model_fname)
+    bookkeep(predictor, validator, tester, args, dataset.INPUT)
 
 
 def main():
     args = setup()
-    run(0, args)
+    run(args)
 
 if __name__ == '__main__':
     main()

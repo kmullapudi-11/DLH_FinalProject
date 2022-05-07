@@ -129,4 +129,3 @@ if __name__ == '__main__':
     #         # inpect padding num distribution
     #         # use `pack_padded_sequence`
     show_time('[Info] Finished loading')
-
