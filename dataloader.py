@@ -70,8 +70,7 @@ class Dataset:
                 .format(len(INPUT.vocab), len(TGT.vocab))
             show_time(msg)
 
-    def get_dataloader(self, proc_id=0, n_gpus=1, device=torch.device('cpu'),
-                       batch_size=64):
+    def get_dataloader(self, proc_id=0, batch_size=64):
         def _distribute_dataset(dataset):
             n = len(dataset)
             part = dataset[n * proc_id: n * (proc_id + 1)]
@@ -84,7 +83,6 @@ class Dataset:
             batch_sizes=(batch_size, batch_size),
             sort_within_batch=True,
             sort_key=lambda x: len(x.input),
-            # device=device,
             repeat=False,
         )
 
@@ -93,7 +91,6 @@ class Dataset:
             batch_size=1,
             sort=False,
             sort_within_batch=False,
-            # device=device,
             repeat=False,
         )
         train_dl = BatchWrapper(train_iter)

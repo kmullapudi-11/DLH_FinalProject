@@ -18,7 +18,7 @@ def clip_gradient(model, clip_value):
         p.grad.data.clamp_(-clip_value, clip_value)
 
 
-def train(proc_id, n_gpus, model=None, train_dl=None, validator=None,
+def train(proc_id, model=None, train_dl=None, validator=None,
           tester=None, epochs=20, lr=0.001, log_every_n_examples=1,
           weight_decay=0):
     # opt = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()),
@@ -60,8 +60,6 @@ def train(proc_id, n_gpus, model=None, train_dl=None, validator=None,
             clip_gradient(model, 1)
             opt.step()
 
-        if n_gpus > 1: torch.distributed.barrier()
-
         model.eval()
         validator.evaluate(model, epoch)
         # tester.evaluate(model, epoch)
@@ -90,19 +88,8 @@ def bookkeep(predictor, validator, tester, args, INPUT_field):
     clean_up(args)
 
 
-def run(proc_id, n_gpus, devices, args):
+def run(proc_id, args):
     set_seed(args.seed)
-    dev_id = devices[proc_id]
-
-    if n_gpus > 1:
-        dist_init_method = 'tcp://{master_ip}:{master_port}'.format(
-            master_ip='127.0.0.1', master_port=args.tcp_port)
-        world_size = n_gpus
-        torch.distributed.init_process_group(backend="nccl",
-                                             init_method=dist_init_method,
-                                             world_size=world_size,
-                                             rank=dev_id)
-    device = torch.device(dev_id)
 
     dataset = Dataset(proc_id=proc_id, data_dir='tmp2/',
                       train_fname='pre_processed_lines.csv',
@@ -110,8 +97,7 @@ def run(proc_id, n_gpus, devices, args):
                       vocab_max_size=100000, emb_dim=100,
                       save_vocab_fname=args.save_vocab_fname, verbose=True, )
     train_dl, valid_dl, test_dl = \
-        dataset.get_dataloader(proc_id=proc_id, n_gpus=n_gpus, device=device,
-                               batch_size=args.batch_size)
+        dataset.get_dataloader(proc_id=proc_id, batch_size=args.batch_size)
 
     validator = Validator(dataloader=valid_dl, save_dir=args.save_dir,
                           save_log_fname=args.save_log_fname,
@@ -126,7 +112,7 @@ def run(proc_id, n_gpus, devices, args):
     predictor = Predictor(args.save_vocab_fname)
 
     if args.load_model:
-        predictor.use_pretrained_model(args.load_model, device=device)
+        predictor.use_pretrained_model(args.load_model)
         import pdb;
         pdb.set_trace()
 
@@ -145,30 +131,20 @@ def run(proc_id, n_gpus, devices, args):
                            n_linear=args.n_linear,
                            n_classes=len(dataset.TGT.vocab))
     if args.init_xavier: model.apply(init_weights)
-    # model = model.to(device)
     args = model_setup(proc_id, model, args)
 
-    train(proc_id, n_gpus, model=model, train_dl=train_dl,
+    train(proc_id, model=model, train_dl=train_dl,
           validator=validator, tester=tester, epochs=args.epochs, lr=args.lr,
           weight_decay=args.weight_decay)
 
     if proc_id == 0:
-        predictor.use_pretrained_model(args.save_model_fname, device=device)
+        predictor.use_pretrained_model(args.save_model_fname)
         bookkeep(predictor, validator, tester, args, dataset.INPUT)
 
 
 def main():
     args = setup()
-
-    n_gpus = 0
-    devices = [0]
-
-    if n_gpus <= 1:
-        run(0, n_gpus, devices, args)
-    else:
-        mp = torch.multiprocessing
-        mp.spawn(run, args=(n_gpus, devices, args), nprocs=n_gpus)
-
+    run(0, args)
 
 if __name__ == '__main__':
     main()
