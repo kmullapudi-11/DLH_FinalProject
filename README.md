@@ -1,24 +1,64 @@
 # DLH Final Project Team 82 - ssm5@illinois.edu, ageubell@illinois.edu
-Steps to run our code:
+
+### Citation to the original paper
+[Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification](https://aclanthology.org/P16-2034) (Zhou et al., ACL 2016)
+
+> Peng Zhou, Wei Shi, Jun Tian, Zhenyu Qi, Bingchen Li, Hongwei Hao, and Bo Xu. 2016. Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification. In Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers), pages 207–212, Berlin, Germany. Association for Computational Linguistics.
+
+### Link to the code repository
+We used an open-source implementation of the aforemnetioned paper that can be found at this [link](https://github.com/zhijing-jin/pytorch_RelationExtraction_AttentionBiLSTM). 
+
+The original README for this repository can be found at the end of this file.
+
+
+### Dependencies
 1. Create a python virtual environment in this directory
 2. Install dependencies using:
 ```
 pip3 install -r requirements.txt
 ```
-3. Pre-process the data by running:
+
+### Data download instruction
+This repository includes the data used in our experiment in the `concept_assertion_relation_training_data` folder.  
+
+The data can also be obtained from the Harvard Department of Medical Informatics [n2c2 research portal](https://portal.dbmi.hms.harvard.edu/projects/n2c2-nlp/).
+
+### Preprocessing code + command
+The pre-processing code lives in the `data_formatting.py` file. To pre-process out data, run:
 ```
 python3 data_formatting.py
 ```
-4. Run the model:
+
+### Training code + Evaluation code command
+Our training and evaluation code lives in the `train.py` file. The hyperparameters associated with the training can be modified in the `get_args.py` file.
+By default, our training model runs for 25 epochs and print the following statistics in the console:
+
+* Loss
+* Accuracy
+* F-1 scores for each label
+* Recall scores for each label
+* Precision scores for each label
+
+Training can be run using the following command:
 ```
 python3 train.py
 ```
 
+###  Table of results
+We used a 70-30 split on our dataset for our train-test split. We used a random word embedding for our sentences and used the following hyperparameters:
+* `embedding dimension` - 100
+* `LSTM combine` - 'add'
+* `embbeding dropout` - 0.5
+
+We achieved the following results:
+
+![Results](results.png)
+
 ----
 
-# [Original GitHub README] 
+##  [Original GitHub README] 
 
-## (Pytorch) Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification
+### (Pytorch) Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification
 Pytorch implementation of ACL 2016 paper, [Attention-Based Bidirectional Long Short-Term Memory Networks for Relation Classification](http://www.aclweb.org/anthology/P16-2034) (Zhou et al., 2016)
 
 - **Dataset:** Relation Extraction Challenge([**SemEval-2010 Task #8**: *Multi-Way Classification of Semantic Relations Between Pairs of Nominals*](https://docs.google.com/document/d/1QO_CnmvNRnYwNWu1-QCAeR5ToQYkXUqFeAJbdEhsq7w/preview))
