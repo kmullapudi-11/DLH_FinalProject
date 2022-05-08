@@ -1,0 +1,55 @@
+
+
+
+{
+    "batch_size": 10,
+    "data_dir": "data/re_semeval/",
+    "data_sizes": [
+        7200,
+        800,
+        2717
+    ],
+    "emb_dim": 100,
+    "emb_dropout": 0.3,
+    "epochs": 25,
+    "init_xavier": false,
+    "linear_dropout": 0.5,
+    "load_model": "",
+    "lower": false,
+    "lr": 0.001,
+    "lstm_combine": "add",
+    "lstm_dim": 100,
+    "lstm_dropout": 0.3,
+    "lstm_n_layer": 1,
+    "n_classes": 2,
+    "n_gpus": 1,
+    "n_linear": 1,
+    "n_params": 838308,
+    "preprocessed": true,
+    "save_dir": "tmp/",
+    "save_dir_cp": "tmp_cp/",
+    "save_log_fname": "tmp/run_log.txt",
+    "save_meta_fname": "tmp/run_meta.txt",
+    "save_model_fname": "tmp/model",
+    "save_valid_fname": "tmp/valid_e00.txt",
+    "save_vis_fname": "tmp/example.txt",
+    "save_vocab_fname": "tmp/vocab.json",
+    "seed": 0,
+    "train_fname": "train.csv",
+    "uid": "05071608",
+    "verbose": false,
+    "vocab_max_size": 100000,
+    "weight_decay": 1e-05
+}
+
+
+LSTMClassifier(
+  (embedding_layer): Embedding(6758, 100)
+  (embedding_dropout): Dropout(p=0.3)
+  (lstm): LSTM(100, 100, batch_first=True, bidirectional=True)
+  (lstm_dropout): Dropout(p=0.3)
+  (linear_layers): ModuleList()
+  (linear_dropout): Dropout(p=0.5)
+  (label): Linear(in_features=100, out_features=8, bias=True)
+  (crit): CrossEntropyLoss()
+)

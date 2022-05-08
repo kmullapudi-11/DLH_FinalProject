@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-
+from sklearn.metrics import precision_recall_fscore_support
 
 class LSTMClassifier(nn.Module):
     def __init__(self, vocab_size=50000, emb_dim=100, emb_vectors=None,
@@ -205,4 +205,26 @@ class LSTMClassifier(nn.Module):
 
         pred_flat = logits_flat.max(dim=-1)[1]
         acc = (pred_flat == target_flat).sum()
-        return loss, acc.item()
+
+        labels = ['absent', 'present', 'associated_with_someone_else', 'hypothetical', 'possible', 'conditional']
+        precision_recall_f1_support = precision_recall_fscore_support(
+            target_flat,
+            pred_flat,
+            labels=labels,
+            average='micro'
+        )
+        precision = precision_recall_f1_support[0]
+        recall = precision_recall_f1_support[1]
+        f1 = precision_recall_f1_support[2]
+        support = precision_recall_f1_support[3]
+        return loss, acc.item(), labels, precision, recall, f1, support
+
+    def loss_n_acc_sans_f1(self, input, target):
+        logits = self.forward(input)
+        logits_flat = logits.view(-1, logits.size(-1))
+        target_flat = target.view(-1)
+        loss = self.crit(logits_flat, target_flat)  # mean_score per batch
+
+        pred_flat = logits_flat.max(dim=-1)[1]
+        acc = (pred_flat == target_flat).sum()
+        return loss, acc.item(), pred_flat, target_flat

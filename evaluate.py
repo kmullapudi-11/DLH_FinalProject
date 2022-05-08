@@ -5,6 +5,7 @@ import torch
 from utils import fwrite, show_var, shell
 
 from model import LSTMClassifier
+from sklearn.metrics import precision_recall_fscore_support
 
 
 class Validator:
@@ -22,20 +23,59 @@ class Validator:
         self.vocab_itos = vocab_itos
         self.label_itos = label_itos
 
+        self.labels = []
+        self.precision = 0
+        self.recall = 0
+        self.f1 = 0
+        self.support = 0
+
     def evaluate(self, model, epoch):
         error = 0
         count = 0
         n_correct = 0
+        
+        # get all to calculate f1, recall, precision and support
+        all_preds = []
+        all_targets = []
 
-        for batch_ix, batch in enumerate(self.dataloader):
+        for _, batch in enumerate(self.dataloader):
             batch_size = len(batch.tgt)
-            loss, acc = model.loss_n_acc(batch.input, batch.tgt)
+            loss, acc, pred_flat, target_flat = model.loss_n_acc_sans_f1(batch.input, batch.tgt)
+
             error += loss.item() * batch_size
             count += batch_size
             n_correct += acc
+
+            all_preds.extend(pred_flat.tolist())
+            all_targets.extend(target_flat.tolist())
+        
+        # print()
+        # print(all_preds)
+        # print(all_targets)
+        # print()
+
+        labels = ['<unk>', '<pad>', 'present', 'absent', 'hypothetical', 'possible', 'associated_with_someone_else', 'conditional']
+        precision_recall_f1_support = precision_recall_fscore_support(
+            all_targets,
+            all_preds,
+            # labels=labels,
+            # average='micro'
+        )
+        precision = precision_recall_f1_support[0]
+        recall = precision_recall_f1_support[1]
+        f1 = precision_recall_f1_support[2]
+        support = precision_recall_f1_support[3]
+        
+        self.labels = labels
+        self.precision = precision
+        self.recall = recall
+        self.f1 = f1
+        self.support = support
+
         avg_loss = (error / count)
         self.avg_loss = avg_loss
         self.acc = (n_correct / count)
+
 
         if (self.valid_or_test == 'valid') and (avg_loss < self.best_loss):
             self.best_loss = avg_loss
@@ -61,6 +101,11 @@ class Validator:
             'Eval': '(e{:02d},{})'.format(epoch, self.valid_or_test),
             'loss': self.avg_loss,
             'acc': self.acc,
+            'labels': self.labels,
+            "precision": self.precision,
+            "recall": self.recall,
+            "f1": self.f1,
+            "support": self.support
         } if summ is None else summ
         summ = {k: _format_value(v) for k, v in summ.items()}
         writeout = json.dumps(summ)
@@ -99,9 +144,9 @@ class Validator:
                     in enumerate(truths)]
         fwrite(''.join(writeout), truth_fname)
 
-        cmd = 'perl {} {} {}'.format(perl_fname, pred_fname, truth_fname)
-        stdout, _ = shell(cmd, stdout=True)
-        fwrite(stdout, result_fname)
+        # cmd = 'perl {} {} {}'.format(perl_fname, pred_fname, truth_fname)
+        # stdout, _ = shell(cmd, stdout=True)
+        # fwrite(stdout, result_fname)
 
 
 class Predictor:
